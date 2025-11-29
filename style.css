@@ -136,9 +136,16 @@ footer {
   .input-group {
     flex-direction: column;
   }
+  
   button {
     width: 100%;
   }
+
+  .item button {
+    padding: 4px 8px;
+    font-size: 14px;
+  }
+
   footer {
     font-size: 12px;
     padding: 10px 0;
