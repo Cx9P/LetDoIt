@@ -1,0 +1,146 @@
+/* =====================
+   General Body & Layout
+===================== */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: 'Arial', sans-serif;
+  background: #f9f9f9;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ให้ main ขยายเต็มพื้นที่ที่เหลือ */
+body > .container {
+  flex: 1 0 auto; /* ขยายเต็มพื้นที่หลัก */
+}
+
+/* =====================
+   Header
+===================== */
+header {
+  text-align: center;
+  padding: 20px 0;
+  background: #6c63ff;
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+/* =====================
+   Main Container
+===================== */
+.container {
+  max-width: 500px;
+  margin: 30px auto;
+  padding: 20px;
+}
+
+/* =====================
+   Input Group
+===================== */
+.input-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+}
+
+button {
+  padding: 10px 20px;
+  background: #6c63ff;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.3s;
+  font-size: 16px;
+}
+
+button:hover {
+  background: #5950d4;
+}
+
+/* =====================
+   Todo List
+===================== */
+#todo-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.item {
+  background: white;
+  padding: 15px;
+  margin-bottom: 12px;
+  border-radius: 10px;
+  cursor: grab;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 16px;
+}
+
+.item.dragging {
+  opacity: 0.5;
+}
+
+.item button {
+  background: #ff4d4f;
+  padding: 5px 10px;
+  border-radius: 8px;
+}
+
+.item button:hover {
+  background: #d9363e;
+}
+
+/* =====================
+   Todo Number
+===================== */
+.item span.number {
+  font-weight: bold;
+  margin-right: 10px;
+  width: 25px;
+  text-align: right;
+  display: inline-block;
+}
+
+/* =====================
+   Footer Sticky
+===================== */
+footer {
+  text-align: center;
+  padding: 15px 0;
+  background: #6c63ff;
+  color: white;
+  font-size: 14px;
+  flex-shrink: 0;
+  box-shadow: 0 -2px 6px rgba(0,0,0,0.1);
+}
+
+/* =====================
+   Responsive (Mobile)
+===================== */
+@media (max-width: 600px) {
+  .input-group {
+    flex-direction: column;
+  }
+  button {
+    width: 100%;
+  }
+  footer {
+    font-size: 12px;
+    padding: 10px 0;
+  }
+}
