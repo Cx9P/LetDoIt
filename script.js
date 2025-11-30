@@ -175,7 +175,7 @@ async function setNotify(id, text) {
     await Notification.requestPermission();
   }
 
-  const time = prompt("ตั้งเวลาแจ้งเตือน (รูปแบบ HH:MM) เช่น 18:30");
+  const time = prompt("ตั้งเวลาแจ้งเตือน เช่น 18:30");
   if (!time) return;
 
   const now = new Date();
