@@ -106,7 +106,7 @@ function enableDrag(li) {
       document.addEventListener("mouseup", dragEnd);
       document.addEventListener("touchmove", dragMove, { passive: false });
       document.addEventListener("touchend", dragEnd);
-    }, 1200);
+    }, 600);
   }
 
   li.addEventListener("mouseup", cancelPress);
