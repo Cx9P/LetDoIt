@@ -1,77 +1,64 @@
-/* =====================
-   General Body & Layout
-===================== */
+/* Body & Container */
 html, body {
-  height: 100%;
   margin: 0;
   padding: 0;
   font-family: 'Arial', sans-serif;
-  background: #f9f9f9;
+  background: #f5f6fa;
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
 }
 
-/* ให้ main ขยายเต็มพื้นที่ที่เหลือ */
-body > .container {
-  flex: 1 0 auto; /* ขยายเต็มพื้นที่หลัก */
-}
-
-/* =====================
-   Header
-===================== */
 header {
-  text-align: center;
-  padding: 20px 0;
   background: #00a896;
   color: white;
+  text-align: center;
+  padding: 20px 0;
   font-size: 24px;
   font-weight: bold;
 }
 
-/* =====================
-   Main Container
-===================== */
 .container {
+  flex: 1 0 auto;
   max-width: 500px;
-  margin: 30px auto;
+  margin: 20px auto;
   padding: 20px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
-/* =====================
-   Input Group
-===================== */
+/* Input Group */
 .input-group {
   display: flex;
   gap: 10px;
   margin-bottom: 20px;
 }
 
-input {
+.input-group input {
   flex: 1;
-  padding: 10px;
+  padding: 12px;
+  font-size: 16px;
   border-radius: 10px;
   border: 1px solid #ccc;
-  font-size: 16px;
 }
 
-button {
-  padding: 10px 20px;
+.input-group button {
+  padding: 12px 20px;
+  border-radius: 10px;
   background: #00a896;
   color: white;
   border: none;
-  border-radius: 10px;
   cursor: pointer;
-  transition: 0.3s;
   font-size: 16px;
+  transition: 0.3s;
 }
 
-button:hover {
-  background: #5950d4;
+.input-group button:hover {
+  background: #00796b;
 }
 
-/* =====================
-   Todo List
-===================== */
+/* Todo List */
 #todo-list {
   list-style: none;
   padding: 0;
@@ -79,85 +66,68 @@ button:hover {
 }
 
 .item {
-  padding: 10px;
-  margin-bottom: 8px;
-  background: #fff;
+  background: #fafafa;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  margin-bottom: 10px;
   border-radius: 10px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  cursor: grab;
 }
-
-.placeholder {
-  background: #dfe6e9;
-  border: 2px dashed #b2bec3;
-  border-radius: 10px;
-  margin-bottom: 8px;
-}
-
 
 .item.dragging {
-  opacity: 0.5;
+  opacity: 0.6;
+}
+
+.item span.number {
+  font-weight: bold;
+  margin-right: 10px;
+  width: 25px;
+  text-align: right;
 }
 
 .item button {
   background: #ff4d4f;
-  padding: 5px 10px;
+  border: none;
   border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  color: white;
+  transition: 0.3s;
 }
 
 .item button:hover {
   background: #d9363e;
 }
 
-/* =====================
-   Todo Number
-===================== */
-.item span.number {
-  font-weight: bold;
-  margin-right: 10px;
-  width: 25px;
-  text-align: right;
-  display: inline-block;
+.placeholder {
+  height: 50px;
+  margin-bottom: 10px;
+  background: #dfe6e9;
+  border: 2px dashed #b2bec3;
+  border-radius: 10px;
 }
 
-/* =====================
-   Footer Sticky
-===================== */
+/* Footer */
 footer {
   text-align: center;
   padding: 15px 0;
   background: #00a896;
   color: white;
-  font-size: 14px;
   flex-shrink: 0;
-  box-shadow: 0 -2px 6px rgba(0,0,0,0.1);
 }
 
-/* =====================
-   Responsive (Mobile)
-===================== */
+/* Mobile */
 @media (max-width: 600px) {
   .input-group {
     flex-direction: column;
   }
-
-  /* ปุ่ม Add */
   .input-group button {
     width: 100%;
-    padding: 10px 0;
   }
-
-  /* ปุ่มลบ Todo item */
   .item button {
-    padding: 5px 12px;
-    font-size: 14px;
-    width: auto;
-  }
-
-  footer {
-    font-size: 12px;
-    padding: 10px 0;
+    padding: 5px 10px;
   }
 }

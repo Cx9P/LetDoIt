@@ -14,9 +14,7 @@ const input = document.getElementById("todo-input");
 const list = document.getElementById("todo-list");
 const addBtn = document.getElementById("add-btn");
 
-// ==============================
 // โหลด todos
-// ==============================
 async function loadTodos() {
   list.innerHTML = "";
   const ref = collection(db, "users", localUserId, "todos");
@@ -30,14 +28,12 @@ async function loadTodos() {
   });
 }
 
-// ==============================
 // สร้าง todo item
-// ==============================
 function createTodoItem(id, text, index, done) {
   const li = document.createElement("li");
   li.className = "item";
   li.dataset.id = id;
-  li.style.userSelect = "none"; // ป้องกันเลือกข้อความบน iOS
+  li.style.userSelect = "none";
 
   const numberSpan = document.createElement("span");
   numberSpan.className = "number";
@@ -47,19 +43,14 @@ function createTodoItem(id, text, index, done) {
   checkbox.type = "checkbox";
   checkbox.checked = done;
   checkbox.onchange = async () => {
-    await updateDoc(doc(db, "users", localUserId, "todos", id), {
-      done: checkbox.checked,
-    });
+    await updateDoc(doc(db, "users", localUserId, "todos", id), { done: checkbox.checked });
+    textSpan.style.textDecoration = checkbox.checked ? "line-through" : "none";
   };
 
   const textSpan = document.createElement("span");
-  textSpan.textContent = text;
   textSpan.className = "todo-text";
+  textSpan.textContent = text;
   if (done) textSpan.style.textDecoration = "line-through";
-
-  checkbox.addEventListener("change", () => {
-    textSpan.style.textDecoration = checkbox.checked ? "line-through" : "none";
-  });
 
   const delBtn = document.createElement("button");
   delBtn.textContent = "ลบ";
@@ -73,110 +64,81 @@ function createTodoItem(id, text, index, done) {
   li.appendChild(textSpan);
   li.appendChild(delBtn);
 
-  enableDrag(li); // รองรับทั้งคอมและมือถือ
+  enableDrag(li);
 
   return li;
 }
 
-// ==============================
-// Drag & Drop รองรับทั้งคอมและมือถือ
-// ==============================
+// Drag & Drop รองรับ desktop & mobile
 function enableDrag(li) {
-  let dragging = false;
-  let startY, startX;
-  let placeholder;
+  let draggingEl, placeholder;
+  let startY = 0;
 
-  // === Desktop ===
-  li.draggable = true;
+  li.addEventListener("mousedown", dragStart);
+  li.addEventListener("touchstart", dragStart, { passive: false });
 
-  li.addEventListener("dragstart", (e) => {
-    dragging = true;
-    e.dataTransfer.effectAllowed = "move";
-    li.classList.add("dragging");
-
-    placeholder = document.createElement("li");
-    placeholder.className = "placeholder";
-    placeholder.style.height = li.offsetHeight + "px";
-
-    li.parentNode.insertBefore(placeholder, li.nextSibling);
-  });
-
-  li.addEventListener("dragend", async () => {
-    dragging = false;
-    li.classList.remove("dragging");
-    li.style.transform = "";
-
-    list.insertBefore(li, placeholder);
-    placeholder.remove();
-
-    await saveOrder();
-    loadTodos();
-  });
-
-  li.addEventListener("dragover", (e) => e.preventDefault());
-
-  li.addEventListener("drop", (e) => e.preventDefault());
-
-  // === Touch (iOS) ===
-  li.addEventListener("touchstart", (e) => {
-    startY = e.touches[0].clientY;
-    startX = e.touches[0].clientX;
-    dragging = true;
-
-    li.classList.add("dragging");
-
-    placeholder = document.createElement("li");
-    placeholder.className = "placeholder";
-    placeholder.style.height = li.offsetHeight + "px";
-
-    li.parentNode.insertBefore(placeholder, li.nextSibling);
-  });
-
-  li.addEventListener("touchmove", (e) => {
-    if (!dragging) return;
+  function dragStart(e) {
     e.preventDefault();
+    draggingEl = li;
+    startY = e.touches ? e.touches[0].clientY : e.clientY;
 
-    const y = e.touches[0].clientY;
-    li.style.transform = `translateY(${y - startY}px)`;
+    placeholder = document.createElement("li");
+    placeholder.className = "placeholder";
+    placeholder.style.height = draggingEl.offsetHeight + "px";
+    draggingEl.parentNode.insertBefore(placeholder, draggingEl.nextSibling);
+
+    draggingEl.classList.add("dragging");
+    document.addEventListener("mousemove", dragMove);
+    document.addEventListener("mouseup", dragEnd);
+    document.addEventListener("touchmove", dragMove, { passive: false });
+    document.addEventListener("touchend", dragEnd);
+  }
+
+  function dragMove(e) {
+    if (!draggingEl) return;
+    const y = e.touches ? e.touches[0].clientY : e.clientY;
+    draggingEl.style.transform = `translateY(${y - startY}px)`;
 
     const after = getDragAfterElement(list, y);
     if (after == null) list.appendChild(placeholder);
     else list.insertBefore(placeholder, after);
-  });
+  }
 
-  li.addEventListener("touchend", async () => {
-    dragging = false;
-    li.classList.remove("dragging");
-    li.style.transform = "";
+  async function dragEnd() {
+    if (!draggingEl) return;
 
-    list.insertBefore(li, placeholder);
+    draggingEl.classList.remove("dragging");
+    draggingEl.style.transform = "";
+    list.insertBefore(draggingEl, placeholder);
     placeholder.remove();
+
+    draggingEl = null;
+    placeholder = null;
+
+    document.removeEventListener("mousemove", dragMove);
+    document.removeEventListener("mouseup", dragEnd);
+    document.removeEventListener("touchmove", dragMove);
+    document.removeEventListener("touchend", dragEnd);
 
     await saveOrder();
     loadTodos();
-  });
+  }
 }
 
 // หา element หลัง pointer
 function getDragAfterElement(list, y) {
   const items = [...list.querySelectorAll(".item:not(.dragging)")];
-
-  return items.reduce(
-    (closest, child) => {
-      const box = child.getBoundingClientRect();
-      const offset = y - box.top - box.height / 2;
-      if (offset < 0 && offset > closest.offset) {
-        return { offset, element: child };
-      }
-      return closest;
-    },
-    { offset: Number.NEGATIVE_INFINITY }
-  ).element;
+  return items.reduce((closest, child) => {
+    const box = child.getBoundingClientRect();
+    const offset = y - box.top - box.height / 2;
+    if (offset < 0 && offset > closest.offset) {
+      return { offset, element: child };
+    }
+    return closest;
+  }, { offset: Number.NEGATIVE_INFINITY }).element;
 }
 
-// ==============================
 // เพิ่มงานใหม่
-// ==============================
 addBtn.onclick = async () => {
   const text = input.value.trim();
   if (!text) return;
@@ -193,16 +155,12 @@ addBtn.onclick = async () => {
   loadTodos();
 };
 
-// ==============================
-// บันทึกลำดับ (Drag & Drop)
-// ==============================
+// บันทึกลำดับ
 async function saveOrder() {
   const items = [...list.querySelectorAll(".item")];
   for (let i = 0; i < items.length; i++) {
     const id = items[i].dataset.id;
-    await updateDoc(doc(db, "users", localUserId, "todos", id), {
-      order: i + 1,
-    });
+    await updateDoc(doc(db, "users", localUserId, "todos", id), { order: i + 1 });
   }
 }
 
