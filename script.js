@@ -73,25 +73,42 @@ function createTodoItem(id, text, index, done) {
 function enableDrag(li) {
   let draggingEl, placeholder;
   let startY = 0;
+  let longPressTimer;
 
-  li.addEventListener("mousedown", dragStart);
-  li.addEventListener("touchstart", dragStart, { passive: false });
+  li.addEventListener("mousedown", startPress);
+  li.addEventListener("touchstart", startPress, { passive: false });
 
-  function dragStart(e) {
+  function startPress(e) {
+    if (e.target.tagName === "INPUT" || e.target.tagName === "BUTTON") return; // ป้องกัน checkbox / ปุ่ม
+
     e.preventDefault();
-    draggingEl = li;
     startY = e.touches ? e.touches[0].clientY : e.clientY;
 
-    placeholder = document.createElement("li");
-    placeholder.className = "placeholder";
-    placeholder.style.height = draggingEl.offsetHeight + "px";
-    draggingEl.parentNode.insertBefore(placeholder, draggingEl.nextSibling);
+    // ตั้ง long press 1.2 วินาที
+    longPressTimer = setTimeout(() => {
+      draggingEl = li;
 
-    draggingEl.classList.add("dragging");
-    document.addEventListener("mousemove", dragMove);
-    document.addEventListener("mouseup", dragEnd);
-    document.addEventListener("touchmove", dragMove, { passive: false });
-    document.addEventListener("touchend", dragEnd);
+      placeholder = document.createElement("li");
+      placeholder.className = "placeholder";
+      placeholder.style.height = draggingEl.offsetHeight + "px";
+      draggingEl.parentNode.insertBefore(placeholder, draggingEl.nextSibling);
+
+      draggingEl.classList.add("dragging");
+
+      document.addEventListener("mousemove", dragMove);
+      document.addEventListener("mouseup", dragEnd);
+      document.addEventListener("touchmove", dragMove, { passive: false });
+      document.addEventListener("touchend", dragEnd);
+    }, 1200); // 1.2 วินาที
+  }
+
+  li.addEventListener("mouseup", cancelPress);
+  li.addEventListener("mouseleave", cancelPress);
+  li.addEventListener("touchend", cancelPress);
+  li.addEventListener("touchcancel", cancelPress);
+
+  function cancelPress() {
+    clearTimeout(longPressTimer);
   }
 
   function dragMove(e) {
@@ -124,45 +141,3 @@ function enableDrag(li) {
     loadTodos();
   }
 }
-
-// หา element หลัง pointer
-function getDragAfterElement(list, y) {
-  const items = [...list.querySelectorAll(".item:not(.dragging)")];
-  return items.reduce((closest, child) => {
-    const box = child.getBoundingClientRect();
-    const offset = y - box.top - box.height / 2;
-    if (offset < 0 && offset > closest.offset) {
-      return { offset, element: child };
-    }
-    return closest;
-  }, { offset: Number.NEGATIVE_INFINITY }).element;
-}
-
-// เพิ่มงานใหม่
-addBtn.onclick = async () => {
-  const text = input.value.trim();
-  if (!text) return;
-
-  const ref = collection(db, "users", localUserId, "todos");
-  const snapshot = await getDocs(ref);
-  const maxOrder = snapshot.docs.reduce((max, docSnap) => {
-    const o = docSnap.data().order ?? 0;
-    return o > max ? o : max;
-  }, 0);
-
-  await addDoc(ref, { text, order: maxOrder + 1, done: false });
-  input.value = "";
-  loadTodos();
-};
-
-// บันทึกลำดับ
-async function saveOrder() {
-  const items = [...list.querySelectorAll(".item")];
-  for (let i = 0; i < items.length; i++) {
-    const id = items[i].dataset.id;
-    await updateDoc(doc(db, "users", localUserId, "todos", id), { order: i + 1 });
-  }
-}
-
-// โหลดเริ่มต้น
-loadTodos();
