@@ -14,7 +14,9 @@ const input = document.getElementById("todo-input");
 const list = document.getElementById("todo-list");
 const addBtn = document.getElementById("add-btn");
 
+// ==============================
 // โหลด todos
+// ==============================
 async function loadTodos() {
   list.innerHTML = "";
   const ref = collection(db, "users", localUserId, "todos");
@@ -28,12 +30,14 @@ async function loadTodos() {
   });
 }
 
+// ==============================
 // สร้าง todo item
+// ==============================
 function createTodoItem(id, text, index, done) {
   const li = document.createElement("li");
   li.className = "item";
   li.dataset.id = id;
-  li.style.userSelect = "none";
+  li.style.userSelect = "none"; // ป้องกันเลือกข้อความบน iOS
 
   const numberSpan = document.createElement("span");
   numberSpan.className = "number";
@@ -69,7 +73,9 @@ function createTodoItem(id, text, index, done) {
   return li;
 }
 
-// Drag & Drop รองรับ desktop & mobile
+// ==============================
+// Drag & Drop รองรับ desktop & mobile พร้อม long press
+// ==============================
 function enableDrag(li) {
   let draggingEl, placeholder;
   let startY = 0;
@@ -79,7 +85,8 @@ function enableDrag(li) {
   li.addEventListener("touchstart", startPress, { passive: false });
 
   function startPress(e) {
-    if (e.target.tagName === "INPUT" || e.target.tagName === "BUTTON") return; // ป้องกัน checkbox / ปุ่ม
+    // ป้องกันกด checkbox / ปุ่ม
+    if (e.target.tagName === "INPUT" || e.target.tagName === "BUTTON") return;
 
     e.preventDefault();
     startY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -99,7 +106,7 @@ function enableDrag(li) {
       document.addEventListener("mouseup", dragEnd);
       document.addEventListener("touchmove", dragMove, { passive: false });
       document.addEventListener("touchend", dragEnd);
-    }, 1200); // 1.2 วินาที
+    }, 1200);
   }
 
   li.addEventListener("mouseup", cancelPress);
@@ -141,3 +148,53 @@ function enableDrag(li) {
     loadTodos();
   }
 }
+
+// ==============================
+// หา element หลัง pointer
+// ==============================
+function getDragAfterElement(list, y) {
+  const items = [...list.querySelectorAll(".item:not(.dragging)")];
+  return items.reduce((closest, child) => {
+    const box = child.getBoundingClientRect();
+    const offset = y - box.top - box.height / 2;
+    if (offset < 0 && offset > closest.offset) {
+      return { offset, element: child };
+    }
+    return closest;
+  }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
+
+// ==============================
+// เพิ่มงานใหม่
+// ==============================
+addBtn.onclick = async () => {
+  const text = input.value.trim();
+  if (!text) return;
+
+  const ref = collection(db, "users", localUserId, "todos");
+  const snapshot = await getDocs(ref);
+  const maxOrder = snapshot.docs.reduce((max, docSnap) => {
+    const o = docSnap.data().order ?? 0;
+    return o > max ? o : max;
+  }, 0);
+
+  await addDoc(ref, { text, order: maxOrder + 1, done: false });
+  input.value = "";
+  loadTodos();
+};
+
+// ==============================
+// บันทึกลำดับ (Drag & Drop)
+// ==============================
+async function saveOrder() {
+  const items = [...list.querySelectorAll(".item")];
+  for (let i = 0; i < items.length; i++) {
+    const id = items[i].dataset.id;
+    await updateDoc(doc(db, "users", localUserId, "todos", id), { order: i + 1 });
+  }
+}
+
+// ==============================
+// โหลดเริ่มต้น
+// ==============================
+loadTodos();
