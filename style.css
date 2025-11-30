@@ -79,17 +79,23 @@ button:hover {
 }
 
 .item {
-  background: white;
-  padding: 15px;
-  margin-bottom: 12px;
+  padding: 10px;
+  margin-bottom: 8px;
+  background: #fff;
   border-radius: 10px;
-  cursor: grab;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 16px;
 }
+
+.placeholder {
+  background: #dfe6e9;
+  border: 2px dashed #b2bec3;
+  border-radius: 10px;
+  margin-bottom: 8px;
+}
+
 
 .item.dragging {
   opacity: 0.5;
